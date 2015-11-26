@@ -42,6 +42,9 @@ Optional properties for main touchpad device:
 
 - atmel,input_name: Override name of input device from the default.
 
+- atmel,gpios: Specify the GPIO input pins whose status will be read via the
+    /sys/class/input/input<n>/backlight_error<x> sysfs entries.
+
 Example:
 
 	touch@4b {
@@ -49,4 +52,16 @@ Example:
 		reg = <0x4b>;
 		interrupt-parent = <&gpio>;
 		interrupts = <TEGRA_GPIO(W, 3) IRQ_TYPE_LEVEL_LOW>;
+
+		atmel,gpios {
+			backlight_error1 {
+				gpio = <3 GPIO_ACTIVE_HIGH>; /* connected to
+							      * the GPIO3 pin of mXT input */
+			};
+
+			backlight_error2 {
+				gpio = <5 GPIO_ACTIVE_HIGH>; /* connected to
+							      * the GPIO5 pin of mXT input */
+			};
+		};
 	};
