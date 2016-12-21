@@ -4349,6 +4349,8 @@ static int mxt_probe(struct i2c_client *client, const struct i2c_device_id *id)
 	snprintf(data->phys, sizeof(data->phys), "i2c-%u-%04x/input0",
 		 client->adapter->nr, client->addr);
 
+	irq_set_status_flags(client->irq, IRQ_DISABLE_UNLAZY);
+
 	data->client = client;
 	i2c_set_clientdata(client, data);
 
@@ -4428,6 +4430,8 @@ err_free_object:
 	mxt_free_input_device(data);
 	mxt_free_object_table(data);
 	sysfs_remove_group(&client->dev.kobj, &mxt_fw_attr_group);
+	if (data->irq)
+		irq_clear_status_flags(data->irq, IRQ_DISABLE_UNLAZY);
 	return error;
 }
 
@@ -4441,6 +4445,8 @@ static int mxt_remove(struct i2c_client *client)
 	gpiod_unexport(data->reset_gpio);
 	mxt_debug_msg_remove(data);
 	mxt_sysfs_remove(data);
+	if (data->irq)
+		irq_clear_status_flags(data->irq, IRQ_DISABLE_UNLAZY);
 	mxt_free_input_device(data);
 	mxt_free_object_table(data);
 
