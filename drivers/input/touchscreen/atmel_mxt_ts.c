@@ -1857,6 +1857,8 @@ static int mxt_check_retrigen(struct mxt_data *data)
 	int error;
 	int val;
 
+	data->use_retrigen_workaround = false;
+
 	if (irq_get_trigger_type(data->irq) & IRQF_TRIGGER_LOW)
 		return 0;
 
