@@ -45,6 +45,8 @@ Optional properties for main touchpad device:
 - atmel,gpios: Specify the GPIO input pins whose status will be read via the
     /sys/class/input/input<n>/backlight_error<x> sysfs entries.
 
+- atmel,mtu: Maximum number of bytes that can read/transferred in an i2c transaction
+
 Example:
 
 	touch@4b {
@@ -52,6 +54,7 @@ Example:
 		reg = <0x4b>;
 		interrupt-parent = <&gpio>;
 		interrupts = <TEGRA_GPIO(W, 3) IRQ_TYPE_LEVEL_LOW>;
+		atmel,mtu = <200>
 
 		atmel,gpios {
 			backlight_error1 {

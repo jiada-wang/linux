@@ -421,6 +421,7 @@ struct mxt_data {
 	unsigned long gpio_input_pin_status;
 	struct attribute_group gpio_attrs;
 	unsigned long gpio_input_pin_status_default;
+	unsigned int mtu;
 
 	bool t25_status;
 };
@@ -1522,13 +1523,30 @@ end:
 	return IRQ_HANDLED;
 }
 
+static u8 mxt_max_msg_read_count(struct mxt_data *data)
+{
+	u8 count_limit = data->mtu / data->T5_msg_size;
+
+	if (!data->mtu)
+		return data->max_reportid;
+
+	if (data->mtu < data->T5_msg_size) {
+		WARN(1, "mtu set is lesser than the T5 message size\n");
+		/* Return count of 1, as fallback */
+		return 1;
+	}
+
+	return min(count_limit, data->max_reportid);
+}
+
 static int mxt_process_messages_until_invalid(struct mxt_data *data)
 {
 	struct device *dev = &data->client->dev;
 	int count, read;
-	u8 tries = 2;
+	int tries;
 
-	count = data->max_reportid;
+	count = mxt_max_msg_read_count(data);
+	tries = (data->max_reportid / count) + 1;
 
 	/* Read messages until we force an invalid */
 	do {
@@ -4289,6 +4307,10 @@ static int mxt_parse_device_properties(struct mxt_data *data)
 		if (np_gpio)
 			of_node_put(np_gpio);
 	}
+
+	device_property_read_u32(dev, "atmel,mtu", &data->mtu);
+	if (data->mtu)
+		dev_dbg(dev, "mtu is set as %d\n", data->mtu);
 
 	return 0;
 
