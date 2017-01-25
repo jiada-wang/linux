@@ -2897,6 +2897,32 @@ static void mxt_config_cb(const struct firmware *cfg, void *ctx)
 	release_firmware(cfg);
 }
 
+static int mxt_bootloader_status(struct mxt_data *data)
+{
+	struct i2c_client *client = data->client;
+	int error;
+
+	error = mxt_lookup_bootloader_address(data, false);
+	if (error) {
+		dev_info(&client->dev,
+			 "Bootloader address is not specified\n");
+		return error;
+	}
+	/* Check bootloader state */
+	error = mxt_probe_bootloader(data);
+	if (error) {
+		dev_info(&client->dev, "Trying alternate bootloader address\n");
+		mxt_lookup_bootloader_address(data, true);
+		error = mxt_probe_bootloader(data);
+		if (error) {
+			dev_err(&client->dev,
+				"Chip is not in appmode or bootloader mode\n");
+			return error;
+		}
+	}
+	return 0;
+}
+
 static int mxt_initialize(struct mxt_data *data)
 {
 	struct i2c_client *client = data->client;
@@ -2912,24 +2938,9 @@ static int mxt_initialize(struct mxt_data *data)
 			 "info block read failed (%d), so try bootloader method\n",
 			 error);
 
-		error = mxt_lookup_bootloader_address(data, false);
-		if (error) {
-			dev_info(&client->dev,
-				 "Bootloader address is not specified\n");
+		error = mxt_bootloader_status(data);
+		if (error)
 			return error;
-		}
-		/* Check bootloader state */
-		error = mxt_probe_bootloader(data);
-		if (error) {
-			dev_info(&client->dev, "Trying alternate bootloader address\n");
-			mxt_lookup_bootloader_address(data, true);
-			error = mxt_probe_bootloader(data);
-			if (error) {
-				dev_err(&client->dev,
-					"Chip is not in appmode or bootloader mode\n");
-				return error;
-			}
-		}
 
 		/* OK, we are in bootloader, see if we can recover */
 		if (++recovery_attempts > 1) {
