@@ -2211,8 +2211,10 @@ release_raw:
 static void mxt_free_input_device(struct mxt_data *data)
 {
 	if (data->input_dev) {
-		input_unregister_device(data->input_dev);
+		struct input_dev *dev = data->input_dev;
+
 		data->input_dev = NULL;
+		input_unregister_device(dev);
 	}
 }
 
