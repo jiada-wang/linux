@@ -1621,9 +1621,9 @@ static irqreturn_t mxt_interrupt(int irq, void *dev_id)
 	struct mxt_data *data = dev_id;
 	int ret;
 
-	complete(&data->chg_completion);
-
 	if (data->in_bootloader) {
+		complete(&data->chg_completion);
+
 		if (data->flash && &data->flash->work)
 			cancel_delayed_work_sync(&data->flash->work);
 
