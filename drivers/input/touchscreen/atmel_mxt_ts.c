@@ -832,7 +832,7 @@ static int mxt_check_bootloader(struct mxt_data *data)
 	f->previous = state;
 
 	/* Poll after 0.1s if no interrupt received */
-	schedule_delayed_work(&f->work, HZ / 10);
+	schedule_delayed_work(&f->work, msecs_to_jiffies(100));
 
 	return 0;
 
@@ -3753,7 +3753,7 @@ static int mxt_load_fw(struct device *dev)
 		goto release_firmware;
 
 	/* Poll after 0.1s if no interrupt received */
-	schedule_delayed_work(&data->flash->work, HZ / 10);
+	schedule_delayed_work(&data->flash->work, msecs_to_jiffies(100));
 
 	/* Wait for flash. */
 	ret = mxt_wait_for_completion(data, &data->flash->flash_completion,
