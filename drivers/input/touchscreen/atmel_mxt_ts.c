@@ -4622,6 +4622,8 @@ err_free_object:
 	mxt_free_object_table(data);
 	del_timer(&data->watchdog_timer);
 	sysfs_remove_group(&client->dev.kobj, &mxt_fw_attr_group);
+	sysfs_remove_link(&client->dev.kobj, "reset");
+	gpiod_unexport(data->reset_gpio);
 	if (data->irq)
 		irq_clear_status_flags(data->irq, IRQ_DISABLE_UNLAZY);
 	return error;
