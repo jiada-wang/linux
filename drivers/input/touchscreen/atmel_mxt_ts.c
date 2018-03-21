@@ -2955,6 +2955,7 @@ static int mxt_initialize_input_device(struct mxt_data *data)
 	return 0;
 
 err_free_mem:
+	data->input_dev = NULL;
 	input_free_device(input_dev);
 	return error;
 }
@@ -4399,13 +4400,6 @@ static int mxt_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		msleep(MXT_RESET_TIME);
 	}
 
-	error = sysfs_create_group(&client->dev.kobj, &mxt_fw_attr_group);
-	if (error) {
-		dev_err(&client->dev, "Failure %d creating fw sysfs group\n",
-			error);
-		return error;
-	}
-
 	INIT_WORK(&data->watchdog_work, mxt_watchdog_work);
 
 	/* setup watchdog timer */
@@ -4415,11 +4409,18 @@ static int mxt_probe(struct i2c_client *client, const struct i2c_device_id *id)
 
 	error = mxt_initialize(data);
 	if (error)
-		goto err_free_object;
+		goto err_del_wd_timer;
+
+	error = sysfs_create_group(&client->dev.kobj, &mxt_fw_attr_group);
+	if (error) {
+		dev_err(&client->dev, "Failure %d creating fw sysfs group\n",
+			error);
+		goto err_del_wd_timer;
+	}
 
 	return 0;
 
-err_free_object:
+err_del_wd_timer:
 	cancel_work_sync(&data->watchdog_work);
 	mxt_stop_wd_timer(data);
 	mxt_free_input_device(data);
