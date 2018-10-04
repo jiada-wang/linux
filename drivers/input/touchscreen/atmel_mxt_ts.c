@@ -615,21 +615,26 @@ static int mxt_debug_msg_init(struct mxt_data *data)
 	 * so it is safe to update a single struct bin_attribute entity
 	 */
 	debug_msg_attr.size = data->T5_msg_size * DEBUG_MSG_MAX;
-	data->debug_msg_attr = &debug_msg_attr;
 
 	if (sysfs_create_bin_file(&data->client->dev.kobj,
-				  data->debug_msg_attr) < 0) {
+				  &debug_msg_attr) < 0) {
 		dev_err(&data->client->dev, "Failed to create %s\n",
 			debug_msg_attr.attr.name);
 		return -EINVAL;
 	}
+
+	data->debug_msg_attr = &debug_msg_attr;
 
 	return 0;
 }
 
 static void mxt_debug_msg_remove(struct mxt_data *data)
 {
-	sysfs_remove_bin_file(&data->client->dev.kobj, data->debug_msg_attr);
+	if (data->debug_msg_attr) {
+		sysfs_remove_bin_file(&data->client->dev.kobj,
+				      data->debug_msg_attr);
+		data->debug_msg_attr = NULL;
+	}
 }
 
 static int mxt_wait_for_completion(struct mxt_data *data,
