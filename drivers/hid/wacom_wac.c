@@ -1504,9 +1504,8 @@ static int wacom_24hdt_irq(struct wacom_wac *wacom)
 		if (slot < 0)
 			continue;
 		input_mt_slot(input, slot);
-		input_mt_report_slot_state(input, MT_TOOL_FINGER, touch);
 
-		if (touch) {
+		if (input_mt_report_slot_state(input, MT_TOOL_FINGER, touch)) {
 			int t_x = get_unaligned_le16(&data[offset + 2]);
 			int t_y = get_unaligned_le16(&data[offset + 4 + y_offset]);
 
@@ -1570,8 +1569,7 @@ static int wacom_mt_touch(struct wacom_wac *wacom)
 			continue;
 
 		input_mt_slot(input, slot);
-		input_mt_report_slot_state(input, MT_TOOL_FINGER, touch);
-		if (touch) {
+		if (input_mt_report_slot_state(input, MT_TOOL_FINGER, touch)) {
 			int x = get_unaligned_le16(&data[offset + x_offset + 7]);
 			int y = get_unaligned_le16(&data[offset + x_offset + 9]);
 			input_report_abs(input, ABS_MT_POSITION_X, x);
@@ -1599,8 +1597,7 @@ static int wacom_tpc_mt_touch(struct wacom_wac *wacom)
 		bool touch = p && report_touch_events(wacom);
 
 		input_mt_slot(input, i);
-		input_mt_report_slot_state(input, MT_TOOL_FINGER, touch);
-		if (touch) {
+		if (input_mt_report_slot_state(input, MT_TOOL_FINGER, touch)) {
 			int x = le16_to_cpup((__le16 *)&data[i * 2 + 2]) & 0x7fff;
 			int y = le16_to_cpup((__le16 *)&data[i * 2 + 6]) & 0x7fff;
 
@@ -2842,8 +2839,7 @@ static int wacom_bpt_touch(struct wacom_wac *wacom)
 			   && (data[offset + 3] & 0x80);
 
 		input_mt_slot(input, i);
-		input_mt_report_slot_state(input, MT_TOOL_FINGER, touch);
-		if (touch) {
+		if (input_mt_report_slot_state(input, MT_TOOL_FINGER, touch)) {
 			int x = get_unaligned_be16(&data[offset + 3]) & 0x7ff;
 			int y = get_unaligned_be16(&data[offset + 5]) & 0x7ff;
 			if (features->quirks & WACOM_QUIRK_BBTOUCH_LOWRES) {
@@ -2879,9 +2875,8 @@ static void wacom_bpt3_touch_msg(struct wacom_wac *wacom, unsigned char *data)
 	touch = touch && report_touch_events(wacom);
 
 	input_mt_slot(input, slot);
-	input_mt_report_slot_state(input, MT_TOOL_FINGER, touch);
 
-	if (touch) {
+	if (input_mt_report_slot_state(input, MT_TOOL_FINGER, touch)) {
 		int x = (data[2] << 4) | (data[4] >> 4);
 		int y = (data[3] << 4) | (data[4] & 0x0f);
 		int width, height;

@@ -118,6 +118,19 @@ void input_mt_destroy_slots(struct input_dev *dev)
 EXPORT_SYMBOL(input_mt_destroy_slots);
 
 /**
+ * input_mt_report_slot_inactive() - report contact inactive state
+ * @dev: input device with allocated MT slots
+ *
+ * Reports the contact inactive state via ABS_MT_TRACKING_ID
+ *
+ */
+void input_mt_report_slot_inactive(struct input_dev *dev)
+{
+	input_event(dev, EV_ABS, ABS_MT_TRACKING_ID, -1);
+}
+EXPORT_SYMBOL(input_mt_report_slot_inactive);
+
+/**
  * input_mt_report_slot_state() - report contact state
  * @dev: input device with allocated MT slots
  * @tool_type: the tool type to use in this slot
@@ -145,7 +158,7 @@ bool input_mt_report_slot_state(struct input_dev *dev,
 	slot->frame = mt->frame;
 
 	if (!active) {
-		input_event(dev, EV_ABS, ABS_MT_TRACKING_ID, -1);
+		input_mt_report_slot_inactive(dev);
 		return false;
 	}
 
